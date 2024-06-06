@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const serverUrl = "http://localhost:5000";
 
-const Register = ({ history }) => {
+const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState(2); //1 admin, 2 user
+    const navigate = useNavigate();//редирект
 
     //отправка данных пользователя на сервер для регистрации и записи в бд
     const handleSubmit = async (e) => {
@@ -17,14 +19,14 @@ const Register = ({ history }) => {
                 password,
                 role,
             });
-            history.push("/login"); //редирект на форму логина
+            navigate("/login"); //редирект на форму логина
         } catch (error) {
             console.error("Ошибка регистрации: ", error);
         }
     };
 
     return (
-        <div className="w-full min-h-screen flex items-center justify-center bg-registerBackground bg-center bg-cover">
+        <div className="w-full grow flex items-center justify-center bg-registerBackground bg-center bg-cover">
             <form
                 className="w-1/3 backdrop-blur-sm bg-white/30 shadow-md rounded px-8 pt-6 pb-8 mb-4"
                 onSubmit={handleSubmit}

@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const serverUrl = "http://localhost:5000";
 
-const Login = ({history}) => {
+const Login = ({setIsAuthenticated, setName}) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();//редирект
 
     const handleSubmit = async(e) => {
         e.preventDefault();
@@ -15,14 +17,16 @@ const Login = ({history}) => {
             });
             //записываем токен в LocalStorage под ключом token
             localStorage.setItem("token", response.data.token);
-            history.push("/protected");
+            setIsAuthenticated(true);
+            setName(username);
+            navigate("/protected"); //редирект на защищенную страницу
         } catch (error) {
             console.error("Ошибка входа: ", error);
         }
     }
 
     return (
-        <div className="w-full min-h-screen flex items-center justify-center bg-loginBackground bg-center bg-cover">
+        <div className="w-full grow flex items-center justify-center bg-loginBackground bg-center bg-cover">
             <form
                 className="w-1/3 backdrop-blur-sm bg-white/30 shadow-md rounded px-8 pt-6 pb-8 mb-4"
                 onSubmit={handleSubmit}

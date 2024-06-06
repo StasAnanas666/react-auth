@@ -4,7 +4,7 @@ import axios from "axios";
 const serverUrl = "http://localhost:5000";
 
 const Protected = () => {
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState("У вас нет доступа к этой странице");
 
     //сработает один раз при загрузке страницы
     useEffect(() => {
@@ -24,7 +24,7 @@ const Protected = () => {
     }, [])
 
     return (
-        <div className="w-full min-h-screen flex items-center justify-center bg-neutral-700">
+        <div className="w-full grow flex items-center justify-center bg-neutral-700">
             <p className="backdrop-blur-sm bg-white/30 shadow-md rounded px-8 pt-6 pb-8 mb-4">
                 {message}
             </p>
