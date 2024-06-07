@@ -36,3 +36,36 @@
     transform: rotate(360deg);
   }
 }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes color-change {
+  0% {
+    border-top-color: #3498db;
+  }
+
+  25% {
+    border-top-color: #e74c3c;
+  }
+
+  50% {
+    border-top-color: #f39c12;
+  }
+
+  75% {
+    border-top-color: #2eec71;
+  }
+
+  100% {
+    border-top-color: #3498db;
+  }
+}
+
+.spinner {
+  border-top-color: #3498db;
+  animation: spin 1s linear infinite, color-change 2s linear infinite;
+}

@@ -8,20 +8,25 @@ const Protected = () => {
 
     //сработает один раз при загрузке страницы
     useEffect(() => {
-        const fetchData = async() => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(`${serverUrl}/protected`, {
-                    headers: {Authorization: token},
-                });
-                setMessage(response.data.message);
-            } catch (error) {
-                console.error("Ошибка получения доступа к защищенной странице: ", error);
+        const fetchData = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                try {
+                    const response = await axios.get(`${serverUrl}/protected`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setMessage(response.data.message);
+                } catch (error) {
+                    console.error(
+                        "Ошибка получения доступа к защищенной странице: ",
+                        error
+                    );
+                }
             }
-        }
+        };
 
         fetchData();
-    }, [])
+    }, []);
 
     return (
         <div className="w-full grow flex items-center justify-center bg-neutral-700">
@@ -29,7 +34,7 @@ const Protected = () => {
                 {message}
             </p>
         </div>
-    )
-}
+    );
+};
 
 export default Protected;

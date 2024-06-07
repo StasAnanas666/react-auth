@@ -1,11 +1,23 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 const Menu = ({ isAuthenticated, username, handleLogout }) => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const navigate = useNavigate();
+
+    const handleLogoutClick = () => {
+        handleLogout();
+        navigate("/login");
+        setDropdownOpen(false);
+    };
+
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
 
     return (
         <nav className="px-12 py-3 bg-gray-800 w-full sticky top-0">
-            <ul className="flex justify-between">
+            <ul className="flex justify-between items-center">
                 <li>
                     <NavLink to="/protected" className="text-gray-100">
                         Защищенная страница
@@ -27,29 +39,27 @@ const Menu = ({ isAuthenticated, username, handleLogout }) => {
                 ) : (
                     <div className="relative">
                         <button
-                            className="text-gray-100"
+                            onClick={toggleDropdown}
+                            className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-100 shadow-sm hover:bg-gray-700"
                         >
                             {username}
                         </button>
-                        <div
-                            className="absolute right-0 mt-2 w-48 bg-gray-600 rounded-md shadow-lg z-10"
-                        >
-                            <NavLink
-                                to="/profile"
-                                className="block px-4 py-2 text-gray-100 hover:bg-gray-400 hover:rounded-t-md"
-                            >
-                                Профиль
-                            </NavLink>
-                            <button
-                                className="w-full text-left block px-4 py-2 text-gray-100 hover:bg-gray-400 hover:rounded-b-md"
-                                onClick={() => {
-                                    handleLogout();
-                                    navigate("/login");
-                                }}
-                            >
-                                Выйти
-                            </button>
-                        </div>
+                        {dropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-gray-600 rounded-md shadow-lg z-10">
+                                <NavLink
+                                    to="/profile"
+                                    className="block px-4 py-2 text-gray-100 hover:bg-gray-400 hover:rounded-t-md"
+                                >
+                                    Профиль
+                                </NavLink>
+                                <button
+                                    className="w-full text-left block px-4 py-2 text-gray-100 hover:bg-gray-400 hover:rounded-b-md"
+                                    onClick={handleLogoutClick}
+                                >
+                                    Выйти
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </ul>

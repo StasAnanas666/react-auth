@@ -6,12 +6,15 @@ import Menu from "./components/Menu";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Protected from "./components/Protected";
+import Profile from "./components/Profile";
+import Loader from "./components/Loader";
 
 const serverUrl = "http://localhost:5000";
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [username, setUsername] = useState("");
+    const [loading, setLoading] = useState(true);
 
     //проверка токена при загрузке приложения
     //если токен есть(т.е. пользователь аутентифицирован, устанавливаем имя пользователя и состояние аутентификации в true)
@@ -21,16 +24,21 @@ function App() {
             const token = localStorage.getItem("token");
             if (token) {
                 try {
-                    const response = await axios.get(`${serverUrl}/protected`, {
-                        headers: { Authorization: token },
+                    const response = await axios.get(`${serverUrl}/profile`, {
+                        headers: { Authorization: `Bearer ${token}` },
                     });
                     setUsername(response.data.user.username);
                     setIsAuthenticated(true);
                 } catch (error) {
-                    localStorage.removeItem("token");
-                    setIsAuthenticated(false);
+                    if (error.response && error.response.status === 403) {
+                        localStorage.removeItem("token");
+                        setIsAuthenticated(false);
+                    } else {
+                        console.error("Ошибка: ", error);
+                    }
                 }
             }
+            setLoading(false);
         };
 
         fetchData();
@@ -42,6 +50,10 @@ function App() {
         setIsAuthenticated(false);
         setUsername("");
     };
+
+    if (loading) {
+        return <Loader />;
+    }
 
     return (
         <Router>
@@ -63,6 +75,7 @@ function App() {
                     />
                     <Route path="/register" element={<Register />} />
                     <Route path="/protected" element={<Protected />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Routes>
             </div>
         </Router>
