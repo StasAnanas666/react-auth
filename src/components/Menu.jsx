@@ -1,14 +1,12 @@
-import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-const Menu = ({ isAuthenticated, username, handleLogout }) => {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+const Menu = ({ isAuthenticated, username, handleLogout, dropdownOpen, setDropdownOpen, dropdownRef }) => {
     const navigate = useNavigate();
 
     const handleLogoutClick = () => {
         handleLogout();
-        navigate("/login");
         setDropdownOpen(false);
+        navigate("/login");        
     };
 
     const toggleDropdown = () => {
@@ -37,7 +35,7 @@ const Menu = ({ isAuthenticated, username, handleLogout }) => {
                         </li>
                     </div>
                 ) : (
-                    <div className="relative">
+                    <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={toggleDropdown}
                             className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-100 shadow-sm hover:bg-gray-700"
@@ -49,6 +47,7 @@ const Menu = ({ isAuthenticated, username, handleLogout }) => {
                                 <NavLink
                                     to="/profile"
                                     className="block px-4 py-2 text-gray-100 hover:bg-gray-400 hover:rounded-t-md"
+                                    onClick={() => setDropdownOpen(false)}
                                 >
                                     Профиль
                                 </NavLink>

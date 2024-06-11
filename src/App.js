@@ -1,6 +1,6 @@
 import "./App.css";
-import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import axios from "axios";
 import Menu from "./components/Menu";
 import Register from "./components/Register";
@@ -15,6 +15,8 @@ function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [username, setUsername] = useState("");
     const [loading, setLoading] = useState(true);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);//состояние, которое сохранятеся во всем приложении
 
     //проверка токена при загрузке приложения
     //если токен есть(т.е. пользователь аутентифицирован, устанавливаем имя пользователя и состояние аутентификации в true)
@@ -44,6 +46,19 @@ function App() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        //проверяем состояний dropdown, скрываеем, если раскрыт и наоборот
+        const handleClickOutside = (event) => {
+            if(dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+    }, [])
+
     //выход из учетки
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -62,6 +77,9 @@ function App() {
                     isAuthenticated={isAuthenticated}
                     username={username}
                     handleLogout={handleLogout}
+                    dropdownOpen={dropdownOpen}
+                    setDropdownOpen={setDropdownOpen}
+                    dropdownRef={dropdownRef}
                 />
                 <Routes>
                     <Route

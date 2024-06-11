@@ -18,14 +18,15 @@ const db = new sqlite3.Database("./exampleDB.db");
 //создание таблиц ролей и пользователей, запись в таблицу ролей админа и юзера
 db.serialize(() => {
     db.run(
-        "create table if not exists roles(id integer primary key autoincrement, role text)"
+        "create table if not exists roles(id integer primary key autoincrement, role text unique)"
     );
 
     db.run(
-        "create table if not exists users(id integer primary key autoincrement, username text, password text, roleid integer, foreign key(roleid) references roles(id))"
+        "create table if not exists users(id integer primary key autoincrement, username text unique, password text, roleid integer, foreign key(roleid) references roles(id))"
     );
 
-    db.run("insert into roles(role) values('admin'), ('user')");
+    db.run("insert or ignore into roles(role) values('admin')");
+    db.run("insert or ignore into roles(role) values('user')");
 });
 
 function authenticateToken(req, res, next) {
@@ -42,20 +43,33 @@ function authenticateToken(req, res, next) {
 
 //регистрация пользователя
 app.post("/register", async (req, res) => {
-    const { username, password, role } = req.body; //получаем данные пользователя из тела запроса
+    const { username, password } = req.body; //получаем данные пользователя из тела запроса
     const hashedPassword = await bcrypt.hash(password, 10); //хэшируем пароль
 
-    //записываем пользователя в бд, передавая в запрос данные из формы + хэшированный пароль
-    db.run(
-        "insert into users(username, password, roleid) values(?,?,?)",
-        [username, hashedPassword, role],
-        (err) => {
-            if (err) {
+    db.get("select count(*) as count from users", (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        //проверяем, есть ли в бд пользователи
+        const isFirstUser = row.count === 0;
+        //первый созданный пользователь получит роль админа, остальные юзер
+        const roleName = isFirstUser ? "admin" : "user";
+        db.get("select id from roles where role=?", [roleName], (err, role) => {
+            if (err || !role) {
                 return res.status(500).json({ error: err.message });
             }
-            res.status(201).json({ id: this.lastID }); //возвращаем id нового юзера в случае успешного выполнения запроса
-        }
-    );
+            db.run(
+                "insert into users(username, password, roleid) values(?,?,?)",
+                [username, hashedPassword, role.id],
+                (err) => {
+                    if (err) {
+                        return res.status(500).json({ error: err.message });
+                    }
+                    res.status(201).json({ id: this.lastID }); //возвращаем id нового юзера в случае успешного выполнения запроса
+                }
+            );
+        });
+    });
 });
 
 //логин пользователя

@@ -7,7 +7,6 @@ const serverUrl = "http://localhost:5000";
 const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState(2); //1 admin, 2 user
     const navigate = useNavigate();//редирект
 
     //отправка данных пользователя на сервер для регистрации и записи в бд
@@ -17,7 +16,6 @@ const Register = () => {
             await axios.post(`${serverUrl}/register`, {
                 username,
                 password,
-                role,
             });
             navigate("/login"); //редирект на форму логина
         } catch (error) {
@@ -60,23 +58,6 @@ const Register = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                </div>
-                <div className="mb-6">
-                    <label
-                        className="block text-gray-700 text-sm font-bold mb-2"
-                        htmlFor="role"
-                    >
-                        Выберите роль:
-                    </label>
-                    <select
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="role"
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                    >
-                        <option value={1}>Администратор</option>
-                        <option value={2}>Пользователь</option>
-                    </select>
                 </div>
                 <div className="flex items-center justify-center">
                     <button className="w-full bg-sky-500 hover:bg-sky-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="submit">
