@@ -1,11 +1,13 @@
 import "./App.css";
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import Menu from "./components/Menu";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Protected from "./components/Protected";
+import Categories from "./components/Categories";
+import Products from "./components/Products";
 import Profile from "./components/Profile";
 import Loader from "./components/Loader";
 
@@ -16,7 +18,7 @@ function App() {
     const [username, setUsername] = useState("");
     const [loading, setLoading] = useState(true);
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const dropdownRef = useRef(null);//состояние, которое сохранятеся во всем приложении
+    const dropdownRef = useRef(null); //состояние, которое сохранятеся во всем приложении
 
     //проверка токена при загрузке приложения
     //если токен есть(т.е. пользователь аутентифицирован, устанавливаем имя пользователя и состояние аутентификации в true)
@@ -49,15 +51,18 @@ function App() {
     useEffect(() => {
         //проверяем состояний dropdown, скрываеем, если раскрыт и наоборот
         const handleClickOutside = (event) => {
-            if(dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target)
+            ) {
                 setDropdownOpen(false);
             }
-        }
+        };
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
-        }
-    }, [])
+        };
+    }, []);
 
     //выход из учетки
     const handleLogout = () => {
@@ -94,6 +99,8 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/protected" element={<Protected />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/products" element={<Products />} />
                 </Routes>
             </div>
         </Router>

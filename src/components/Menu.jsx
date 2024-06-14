@@ -1,12 +1,19 @@
 import { NavLink, useNavigate } from "react-router-dom";
 
-const Menu = ({ isAuthenticated, username, handleLogout, dropdownOpen, setDropdownOpen, dropdownRef }) => {
+const Menu = ({
+    isAuthenticated,
+    username,
+    handleLogout,
+    dropdownOpen,
+    setDropdownOpen,
+    dropdownRef,
+}) => {
     const navigate = useNavigate();
 
     const handleLogoutClick = () => {
         handleLogout();
         setDropdownOpen(false);
-        navigate("/login");        
+        navigate("/login");
     };
 
     const toggleDropdown = () => {
@@ -17,8 +24,14 @@ const Menu = ({ isAuthenticated, username, handleLogout, dropdownOpen, setDropdo
         <nav className="px-12 py-3 bg-gray-800 w-full sticky top-0">
             <ul className="flex justify-between items-center">
                 <li>
-                    <NavLink to="/protected" className="text-gray-100">
+                    <NavLink to="/protected" className="text-gray-100 mr-8">
                         Защищенная страница
+                    </NavLink>
+                    <NavLink to="/categories" className="text-gray-100 mr-8">
+                        Категории
+                    </NavLink>
+                    <NavLink to="/products" className="text-gray-100 mr-8">
+                        Товары
                     </NavLink>
                 </li>
                 {!isAuthenticated ? (
