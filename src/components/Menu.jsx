@@ -21,7 +21,7 @@ const Menu = ({
     };
 
     return (
-        <nav className="px-12 py-3 bg-gray-800 w-full sticky top-0">
+        <nav className="px-12 py-3 bg-gray-800 w-full sticky top-0 z-10">
             <ul className="flex justify-between items-center">
                 <li>
                     <NavLink to="/protected" className="text-gray-100 mr-8">

@@ -99,7 +99,10 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/protected" element={<Protected />} />
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/categories" element={<Categories />} />
+                    <Route
+                        path="/categories"
+                        element={<Categories user={username} />}
+                    />
                     <Route path="/products" element={<Products />} />
                 </Routes>
             </div>

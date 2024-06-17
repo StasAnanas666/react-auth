@@ -33,7 +33,7 @@ db.serialize(() => {
     );
 
     db.run(
-        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"  
+        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
     );
 });
 
@@ -141,64 +141,75 @@ app.get("/profile", authenticateToken, (req, res) => {
 
 //проверка роли админа
 const isAdmin = (req, res, next) => {
-    if(req.user.role !== 1) { //1 - id роли админа
-        return res.status(403).json({message: "Доступ запрещен"});
+    if (req.user.role !== 1) {
+        //1 - id роли админа
+        return res.status(403).json({ message: "Доступ запрещен" });
     }
-    next();//передача управления следующему методу
-}
+    next(); //передача управления следующему методу
+};
 
 //добавление категорий (только для админа)
-app.post("/categories", authenticateToken, isAdmin, (req, res) => {
-    const {name} = req.body;
+app.post("/categories", authenticateToken, (req, res) => {
+    const { name } = req.body;
     db.run("insert into categories(name) values(?)", [name], (err) => {
-        if(err) {
-            return res.status(500).json({message: "Ошибка базы данных"})
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
         }
-        res.status(201).json({message: "Категория создана", categoryId: this.lastID});
-    })
-})
+        res.status(201).json({
+            message: "Категория создана",
+            categoryId: this.lastID,
+        });
+    });
+});
 
 //запрос категорий для вывода
-app.get("/categories", authenticateToken, (req, res) => {
+app.get("/categories", (req, res) => {
     db.all("select * from categories", [], (err, categories) => {
-        if(err) {
-            return res.status(500).json({message: "Ошибка базы данных"})
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
         }
         res.json(categories);
-    })
-})
+    });
+});
 
 //добавление товаров
 app.post("/products", authenticateToken, (req, res) => {
-    const {name, description, price, categoryId} = req.body;
-    db.run("insert into products(name, description, price, categoryid, userid) values(?,?,?,?,?)", [name, description, price, categoryId, req.user.id], (err) => {
-        if(err) {
-            return res.status(500).json({message: "Ошибка базы данных"});
+    const { name, description, price, categoryId } = req.body;
+    db.run(
+        "insert into products(name, description, price, categoryid, userid) values(?,?,?,?,?)",
+        [name, description, price, categoryId, req.user.id],
+        (err) => {
+            if (err) {
+                return res.status(500).json({ message: "Ошибка базы данных" });
+            }
+            res.status(201).json({
+                mesage: "Товар добавлен",
+                productId: this.lastID,
+            });
         }
-        res.status(201).json({mesage: "Товар добавлен", productId: this.lastID});
-    })
-})
+    );
+});
 
 //получение всех товаров
-app.get("/products", authenticateToken, (req, res) => {
+app.get("/products", (req, res) => {
     db.all("select * from products", [], (err, products) => {
-        if(err) {
-            return res.status(500).json({message: "Ошибка базы данных"});
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
         }
         res.json(products);
-    })
-})
+    });
+});
 
 //получение товара по id
-app.get("/products/:id", authenticateToken, (req, res) => {
-    const {id} = req.params;
+app.get("/products/:id", (req, res) => {
+    const { id } = req.params;
     db.get("select * from products where id=?", [id], (err, product) => {
-        if(err || !product) {
-            return res.status(404).json({message: "Товар не найден"});
+        if (err || !product) {
+            return res.status(404).json({ message: "Товар не найден" });
         }
         res.json(product);
-    })
-})
+    });
+});
 
 //запуск сервера
 app.listen(port, () => {
