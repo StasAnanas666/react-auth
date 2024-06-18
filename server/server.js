@@ -148,6 +148,18 @@ const isAdmin = (req, res, next) => {
     next(); //передача управления следующему методу
 };
 
+// ****************************************КАТЕГОРИИ******************************************
+
+//запрос категорий для вывода
+app.get("/categories", (req, res) => {
+    db.all("select * from categories", [], (err, categories) => {
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
+        }
+        res.json(categories);
+    });
+});
+
 //добавление категорий (только для админа)
 app.post("/categories", authenticateToken, (req, res) => {
     const { name } = req.body;
@@ -162,33 +174,36 @@ app.post("/categories", authenticateToken, (req, res) => {
     });
 });
 
-//запрос категорий для вывода
-app.get("/categories", (req, res) => {
-    db.all("select * from categories", [], (err, categories) => {
+//изменение категории
+app.put("/categories/:id", authenticateToken, (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    db.run("update categories set name=? where id=?", [name, id], (err) => {
         if (err) {
             return res.status(500).json({ message: "Ошибка базы данных" });
         }
-        res.json(categories);
+        res.status(201).json({
+            message: "Категория изменена",
+            productId: this.lastID,
+        });
     });
 });
 
-//добавление товаров
-app.post("/products", authenticateToken, (req, res) => {
-    const { name, description, price, categoryId } = req.body;
-    db.run(
-        "insert into products(name, description, price, categoryid, userid) values(?,?,?,?,?)",
-        [name, description, price, categoryId, req.user.id],
-        (err) => {
-            if (err) {
-                return res.status(500).json({ message: "Ошибка базы данных" });
-            }
-            res.status(201).json({
-                mesage: "Товар добавлен",
-                productId: this.lastID,
-            });
+//удаление категории
+app.delete("/categories/:id", authenticateToken, (req, res) => {
+    const { id } = req.params;
+    db.run("delete from categories where id=?", [id], (err) => {
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
         }
-    );
+        res.status(201).json({
+            message: "Категория удалена",
+            productId: this.lastID,
+        });
+    });
 });
+
+// ****************************************ТОВАРЫ******************************************
 
 //получение всех товаров
 app.get("/products", (req, res) => {
@@ -210,6 +225,54 @@ app.get("/products/:id", (req, res) => {
         res.json(product);
     });
 });
+
+//добавление товаров
+app.post("/products", authenticateToken, (req, res) => {
+    const { name, description, price, categoryid } = req.body;
+    db.run(
+        "insert into products(name, description, price, categoryid, userid) values(?,?,?,?,?)",
+        [name, description, price, categoryid, req.user.id],
+        (err) => {
+            if (err) {
+                return res.status(500).json({ message: "Ошибка базы данных" });
+            }
+            res.status(201).json({
+                message: "Товар добавлен",
+                productId: this.lastID,
+            });
+        }
+    );
+});
+
+//изменение товара
+app.put("/products/:id", authenticateToken, (req, res) => {
+    const {id} = req.params;
+    const {name, description, price, categoryid} = req.body;
+    db.run("update products set name=?, description=?, price=?, categoryid=? where id=?", [name, description, price, categoryid, id], err => {
+        if (err) {
+                return res.status(500).json({ message: "Ошибка базы данных" });
+            }
+            res.status(201).json({
+                message: "Товар изменен",
+                productId: this.lastID,
+            });
+    })
+})
+
+//удаление товара
+app.delete("/products/:id", authenticateToken, (req, res) => {
+    const { id } = req.params;
+    db.run("delete from products where id=?", [id], (err) => {
+        if (err) {
+            return res.status(500).json({ message: "Ошибка базы данных" });
+        }
+        res.status(201).json({
+            message: "Товар удален",
+            productId: this.lastID,
+        });
+    });
+});
+
 
 //запуск сервера
 app.listen(port, () => {

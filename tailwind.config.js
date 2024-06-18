@@ -7,6 +7,10 @@ module.exports = {
                 registerBackground: "url('/src/images/background.jpg')",
                 loginBackground: "url('/src/images/login.jpg')",
             },
+            maxHeight: {
+                55: "55vh",
+                30: "30vh"
+            },
         },
     },
     plugins: [],
