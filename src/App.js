@@ -3,12 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import Menu from "./components/Menu";
-import Register from "./components/Register";
-import Login from "./components/Login";
-import Protected from "./components/Protected";
-import Categories from "./components/Categories";
-import Products from "./components/Products";
-import Profile from "./components/Profile";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Protected from "./pages/Protected";
+import Categories from "./pages/Categories";
+import Products from "./pages/Products";
+import Profile from "./pages/Profile";
 import Loader from "./components/Loader";
 
 const serverUrl = "http://localhost:5000";

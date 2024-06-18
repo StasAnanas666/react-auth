@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
-const serverUrl = "http://localhost:5000";
+import { serverUrl } from "../constants";
 
 const Protected = () => {
     const [message, setMessage] = useState("У вас нет доступа к этой странице");

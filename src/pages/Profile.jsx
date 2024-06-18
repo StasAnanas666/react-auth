@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Loader from "./Loader";
-
-const serverUrl = "http://localhost:5000";
+import Loader from "../components/Loader";
+import { serverUrl } from "../constants";
 
 const Profile = () => {
     const [profile, setProfile] = useState(null);

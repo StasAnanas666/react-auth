@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { serverUrl } from "../constants";
 
-const serverUrl = "http://localhost:5000";
-
-const Login = ({setIsAuthenticated, setName}) => {
+const Login = ({ setIsAuthenticated, setName }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();//редирект
+    const navigate = useNavigate(); //редирект
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.post(`${serverUrl}/login`, {
-                username, password
+                username,
+                password,
             });
             //записываем токен в LocalStorage под ключом token
             localStorage.setItem("token", response.data.token);
@@ -23,7 +23,7 @@ const Login = ({setIsAuthenticated, setName}) => {
         } catch (error) {
             console.error("Ошибка входа: ", error);
         }
-    }
+    };
 
     return (
         <div className="w-full grow flex items-center justify-center bg-loginBackground bg-center bg-cover">
@@ -62,13 +62,16 @@ const Login = ({setIsAuthenticated, setName}) => {
                     />
                 </div>
                 <div className="flex items-center justify-center">
-                    <button className="w-full bg-amber-500 hover:bg-amber-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    <button
+                        className="w-full bg-amber-500 hover:bg-amber-700 text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline"
+                        type="submit"
+                    >
                         Войти
                     </button>
                 </div>
             </form>
         </div>
     );
-}
+};
 
 export default Login;

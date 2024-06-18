@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const serverUrl = "http://localhost:5000";
+import { serverUrl } from "../constants";
 
 const Register = () => {
     const [username, setUsername] = useState("");
