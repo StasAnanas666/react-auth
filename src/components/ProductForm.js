@@ -3,16 +3,27 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 //category может содержать категорию, если форма используется для редактирования
-const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
+const ProductForm = ({
+    product = {},
+    categories = [],
+    onSubmit,
+    resetForm,
+}) => {
     const [productName, setProductName] = useState(product.name || "");
     const [productDesc, setProductDesc] = useState(product.description || "");
     const [productPrice, setProductPrice] = useState(product.price || "");
+    const [productImage, setProductImage] = useState(null);
+    const [productQuantity, setProductQuantity] = useState(
+        product.quantity || ""
+    );
     const [categoryId, setCategoryId] = useState(product.categoryid || "");
 
     useEffect(() => {
         setProductName(product.name || "");
         setProductDesc(product.description || "");
         setProductPrice(product.price || "");
+        setProductQuantity(product.quantity || "");
+        setProductImage(null);
         setCategoryId(product.categoryid || "");
     }, [product]);
 
@@ -20,13 +31,15 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
         e.preventDefault();
         try {
             if (product.id) {
-                await axios.put(
+                const response = await axios.put(
                     `${serverUrl}/products/${product.id}`,
                     {
                         name: productName,
                         description: productDesc,
                         price: productPrice,
                         categoryid: categoryId,
+                        image: productImage,
+                        quantity: productQuantity,
                     },
                     {
                         headers: {
@@ -36,14 +49,17 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
                         },
                     }
                 );
+                console.log(response.data);
             } else {
-                await axios.post(
+                const response = await axios.post(
                     `${serverUrl}/products`,
                     {
                         name: productName,
                         description: productDesc,
                         price: productPrice,
                         categoryid: categoryId,
+                        image: productImage,
+                        quantity: productQuantity,
                     },
                     {
                         headers: {
@@ -53,6 +69,7 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
                         },
                     }
                 );
+                console.log(response.data);
             }
         } catch (error) {
             console.error("Ошибка: ", error);
@@ -67,17 +84,25 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
         setProductDesc("");
         setProductPrice("");
         setCategoryId("");
+        setProductQuantity("");
+        setProductImage(null);
+        resetForm();
     };
 
-    const handleSelectChange = async(e) => {
+    const handleSelectChange = async (e) => {
         setCategoryId(e.target.value);
         console.log(e.target.value);
+    };
+
+    const handleImageChange = async(e) => {
+        setProductImage(e.target.files[0].name);
+        console.log(e.target.files[0].name);
     }
 
     return (
         <form
             className="backdrop-blur-sm bg-white/30 shadow-md rounded px-8 pt-6 pb-8 mb-4"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit} encType="multipart/form-data"
         >
             <div className="mb-2">
                 <label
@@ -94,6 +119,29 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
                     onChange={(e) => setProductName(e.target.value)}
                     placeholder="Введите название товара..."
                 />
+            </div>
+            <div className="mb-2">
+                <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="productCategory"
+                >
+                    Категория:{" "}
+                </label>
+                <select
+                    id="productCategory"
+                    value={categoryId}
+                    onChange={handleSelectChange}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                    <option value="" disabled>
+                        Выберите категорию...
+                    </option>
+                    {categories.map((category) => (
+                        <option value={category.id} key={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
             </div>
             <div className="mb-2">
                 <label
@@ -128,26 +176,35 @@ const ProductForm = ({ product = {}, categories = [], onSubmit }) => {
                     placeholder="Введите цену товара..."
                 />
             </div>
+            <div className="mb-2">
+                <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="productQuantity"
+                >
+                    Количество товара:{" "}
+                </label>
+                <input
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    type="number"
+                    min={0}
+                    id="productQuantity"
+                    value={productQuantity}
+                    onChange={(e) => setProductQuantity(e.target.value)}
+                    placeholder="Введите количество товара..."
+                />
+            </div>
             <div className="mb-4">
                 <label
                     className="block text-gray-700 text-sm font-bold mb-2"
-                    htmlFor="productCategory"
+                    htmlFor="productImage"
                 >
-                    Категория:{" "}
+                    Фото товара:{" "}
                 </label>
-                <select
-                    id="productCategory"
-                    value={categoryId}
-                    onChange={handleSelectChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                    <option value="" disabled>Выберите категорию...</option>
-                    {categories.map(category => (
-                        <option value={category.id} key={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                </select>
+                <input
+                    type="file"
+                    className="shadow appearance-none block w-full text-sm text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100" id="productImage"
+                    onChange={handleImageChange}
+                />
             </div>
             <div className="flex items-center">
                 <button

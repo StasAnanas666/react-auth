@@ -10,6 +10,7 @@ import Categories from "./pages/Categories";
 import Products from "./pages/Products";
 import Profile from "./pages/Profile";
 import Loader from "./components/Loader";
+import Catalog from "./pages/Catalog";
 
 const serverUrl = "http://localhost:5000";
 
@@ -104,6 +105,7 @@ function App() {
                         element={<Categories user={username} />}
                     />
                     <Route path="/products" element={<Products />} />
+                    <Route path="/catalog" element={<Catalog />} />
                 </Routes>
             </div>
         </Router>

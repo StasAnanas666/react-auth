@@ -49,9 +49,9 @@ const Categories = () => {
         }
     };
 
-    if (loading) {
-        return <Loader />;
-    }
+    // if (loading) {
+    //     return <Loader />;
+    // }
 
     return (
         <div className="w-full grow items-center justify-center px-12 bg-neutral-700 text-white">
@@ -60,6 +60,7 @@ const Categories = () => {
             <CategoryForm
                 category={editingCategory != null ? editingCategory : ""}
                 onSubmit={handleCategorySubmit}
+                resetForm={() => setEditingCategory(null)}
             />
 
             <div className="w-full bg-white/30 max-h-55 overflow-y-auto rounded mt-16">

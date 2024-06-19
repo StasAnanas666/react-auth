@@ -27,6 +27,9 @@ const Menu = ({
                     <NavLink to="/protected" className="text-gray-100 mr-8">
                         Защищенная страница
                     </NavLink>
+                    <NavLink to="/catalog" className="text-gray-100 mr-8">
+                        Каталог
+                    </NavLink>
                     <NavLink to="/categories" className="text-gray-100 mr-8">
                         Категории
                     </NavLink>

@@ -51,7 +51,9 @@ const Products = () => {
     };
 
     const handleEditClick = (product) => {
+        console.log(product);
         setEditingProduct(product);
+        console.log(editingProduct);
     };
 
     const handleDeleteClick = async (productId) => {
@@ -66,31 +68,38 @@ const Products = () => {
         }
     };
 
-    if (loading) {
-        return <Loader />;
-    }
+    // if (loading) {
+    //     return <Loader />;
+    // }
 
     return (
         <div className="w-full grow items-center justify-center px-12 bg-neutral-700 text-white">
             <h2 className="text-2xl font-bold my-4">Товары</h2>
 
             <ProductForm
-                product={editingProduct != null ? setEditingProduct : ""}
+                product={editingProduct != null ? editingProduct : ""}
                 categories={categories}
                 onSubmit={handleProductSubmit}
+                resetForm={() => setEditingProduct(null)}
             />
 
-            <div className="w-full bg-white/30 max-h-30 overflow-y-auto rounded mt-6">
+            <div className="w-full bg-white/30 max-h-33 overflow-y-auto rounded mt-6">
                 <ul className="divide-y divide-gray-100">
                     {products.map((product) => (
                         <li
                             className="gap-x-6 py-5 px-8 flex justify-between items-center"
                             key={product.id}
                         >
-                            <div className="flex w-2/3 justify-between">
+                            <div className="flex w-5/6 justify-between text-center">
                                 <p>{product.name}</p>
                                 <p>{product.description}</p>
-                                <p>{categories.find(c => c.id === product.categoryid)?.name}</p>
+                                <p>
+                                    {
+                                        categories.find(
+                                            (c) => c.id === product.categoryid
+                                        )?.name
+                                    }
+                                </p>
                                 <p>{product.price} руб.</p>
                             </div>
                             <div className="flex justify-between">

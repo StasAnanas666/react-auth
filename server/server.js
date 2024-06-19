@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
 const port = 5000;
@@ -33,9 +35,25 @@ db.serialize(() => {
     );
 
     db.run(
-        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
+        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, image text not null, quantity integer default 0, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
     );
 });
+
+//настройка хранения файлов
+const storage = multer.diskStorage({
+    //путь сохранения файлов
+    destination: (req, file, cb) => {
+        cb(null, "images/");
+    },
+    //название файла при сохранении(текущая дата + название)
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    },
+});
+
+const upload = multer({ storage });
+
+app.use("/images", express.static("images"));
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
@@ -227,13 +245,19 @@ app.get("/products/:id", (req, res) => {
 });
 
 //добавление товаров
-app.post("/products", authenticateToken, (req, res) => {
-    const { name, description, price, categoryid } = req.body;
+app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
+    const { name, description, price, categoryid, quantity } = req.body;
+    console.log(req.body);
+    const image = req.file ? `/images/${req.file.filename}` : null;
+    console.log(req.file);
+    console.log(req.file.filename);
+    console.log(image);
     db.run(
-        "insert into products(name, description, price, categoryid, userid) values(?,?,?,?,?)",
-        [name, description, price, categoryid, req.user.id],
+        "insert into products(name, description, price, categoryid, userid, image, quantity) values(?,?,?,?,?,?,?)",
+        [name, description, price, categoryid, req.user.id, image, quantity],
         (err) => {
             if (err) {
+                console.log(err);
                 return res.status(500).json({ message: "Ошибка базы данных" });
             }
             res.status(201).json({
@@ -245,19 +269,31 @@ app.post("/products", authenticateToken, (req, res) => {
 });
 
 //изменение товара
-app.put("/products/:id", authenticateToken, (req, res) => {
-    const {id} = req.params;
-    const {name, description, price, categoryid} = req.body;
-    db.run("update products set name=?, description=?, price=?, categoryid=? where id=?", [name, description, price, categoryid, id], err => {
-        if (err) {
-                return res.status(500).json({ message: "Ошибка базы данных" });
+app.put(
+    "/products/:id",
+    authenticateToken,
+    upload.single("image"),
+    (req, res) => {
+        const { id } = req.params;
+        const { name, description, price, categoryid, quantity } = req.body;
+        const image = req.file ? `/images/${req.file.filename}` : null;
+        db.run(
+            "update products set name=?, description=?, price=?, categoryid=?, image=?, quantity=? where id=?",
+            [name, description, price, categoryid, image, quantity, id],
+            (err) => {
+                if (err) {
+                    return res
+                        .status(500)
+                        .json({ message: "Ошибка базы данных" });
+                }
+                res.status(201).json({
+                    message: "Товар изменен",
+                    productId: this.lastID,
+                });
             }
-            res.status(201).json({
-                message: "Товар изменен",
-                productId: this.lastID,
-            });
-    })
-})
+        );
+    }
+);
 
 //удаление товара
 app.delete("/products/:id", authenticateToken, (req, res) => {
@@ -272,7 +308,6 @@ app.delete("/products/:id", authenticateToken, (req, res) => {
         });
     });
 });
-
 
 //запуск сервера
 app.listen(port, () => {

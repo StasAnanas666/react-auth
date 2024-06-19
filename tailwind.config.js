@@ -9,9 +9,9 @@ module.exports = {
             },
             maxHeight: {
                 55: "55vh",
-                30: "30vh"
+                33: "33vh",
             },
         },
     },
-    plugins: [],
+    plugins: [require("@tailwindcss/aspect-ratio")],
 };

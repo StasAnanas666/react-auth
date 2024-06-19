@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 //category может содержать категорию, если форма используется для редактирования
-const CategoryForm = ({ category = {}, onSubmit }) => {
+const CategoryForm = ({ category = {}, onSubmit, resetForm }) => {
     const [categoryName, setCategoryName] = useState(category.name || "");
 
     useEffect(() => {
@@ -50,7 +50,10 @@ const CategoryForm = ({ category = {}, onSubmit }) => {
         }
     };
 
-    const handleReset = () => { setCategoryName(""); };
+    const handleReset = () => { 
+        setCategoryName(""); 
+        resetForm();
+    };
 
     return (
         <form
