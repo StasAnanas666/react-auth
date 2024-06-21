@@ -245,11 +245,13 @@ app.get("/products", (req, res) => {
 //получение товара по id
 app.get("/products/:id", (req, res) => {
     const { id } = req.params;
+    console.log(id);
     db.get("select * from products where id=?", [id], (err, product) => {
         if (err || !product) {
             return res.status(404).json({ message: "Товар не найден" });
         }
         res.json(product);
+        console.log(product);
     });
 });
 

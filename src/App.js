@@ -11,6 +11,7 @@ import Products from "./pages/Products";
 import Profile from "./pages/Profile";
 import Loader from "./components/Loader";
 import Catalog from "./pages/Catalog";
+import ProductDetails from "./pages/ProductDetails";
 
 const serverUrl = "http://localhost:5000";
 
@@ -106,6 +107,7 @@ function App() {
                     />
                     <Route path="/products" element={<Products />} />
                     <Route path="/catalog" element={<Catalog />} />
+                    <Route path="/catalog/:id" element={<ProductDetails />} />
                 </Routes>
             </div>
         </Router>
