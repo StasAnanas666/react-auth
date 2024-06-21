@@ -23,51 +23,42 @@ const ProductForm = ({
         setProductDesc(product.description || "");
         setProductPrice(product.price || "");
         setProductQuantity(product.quantity || "");
-        setProductImage(null);
         setCategoryId(product.categoryid || "");
     }, [product]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("name", productName);
+        formData.append("description", productDesc);
+        formData.append("price", productPrice);
+        formData.append("categoryid", categoryId);
+        if (productImage) {
+            formData.append("image", productImage);
+        }
+        formData.append("quantity", productQuantity);
+
         try {
+            const config = {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            };
+
             if (product.id) {
                 const response = await axios.put(
                     `${serverUrl}/products/${product.id}`,
-                    {
-                        name: productName,
-                        description: productDesc,
-                        price: productPrice,
-                        categoryid: categoryId,
-                        image: productImage,
-                        quantity: productQuantity,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                            )}`,
-                        },
-                    }
+                    formData,
+                    config
                 );
                 console.log(response.data);
             } else {
                 const response = await axios.post(
                     `${serverUrl}/products`,
-                    {
-                        name: productName,
-                        description: productDesc,
-                        price: productPrice,
-                        categoryid: categoryId,
-                        image: productImage,
-                        quantity: productQuantity,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                            )}`,
-                        },
-                    }
+                    formData,
+                    config
                 );
                 console.log(response.data);
             }
@@ -94,15 +85,16 @@ const ProductForm = ({
         console.log(e.target.value);
     };
 
-    const handleImageChange = async(e) => {
-        setProductImage(e.target.files[0].name);
+    const handleImageChange = async (e) => {
+        setProductImage(e.target.files[0]);
         console.log(e.target.files[0].name);
-    }
+    };
 
     return (
         <form
             className="backdrop-blur-sm bg-white/30 shadow-md rounded px-8 pt-6 pb-8 mb-4"
-            onSubmit={handleSubmit} encType="multipart/form-data"
+            onSubmit={handleSubmit}
+            encType="multipart/form-data"
         >
             <div className="mb-2">
                 <label
@@ -202,7 +194,8 @@ const ProductForm = ({
                 </label>
                 <input
                     type="file"
-                    className="shadow appearance-none block w-full text-sm text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100" id="productImage"
+                    className="shadow appearance-none block w-full text-sm text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                    id="productImage"
                     onChange={handleImageChange}
                 />
             </div>

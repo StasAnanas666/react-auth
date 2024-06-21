@@ -53,7 +53,6 @@ const Products = () => {
     const handleEditClick = (product) => {
         console.log(product);
         setEditingProduct(product);
-        console.log(editingProduct);
     };
 
     const handleDeleteClick = async (productId) => {

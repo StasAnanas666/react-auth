@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const port = 5000;
@@ -35,25 +36,33 @@ db.serialize(() => {
     );
 
     db.run(
-        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, image text not null, quantity integer default 0, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
+        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, image text, quantity integer default 0, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
     );
 });
+
+//если нет папка images - создать
+if (!fs.existsSync("../public/images/products")) {
+    fs.mkdirSync("../public/images/products", { recursive: true });
+}
 
 //настройка хранения файлов
 const storage = multer.diskStorage({
     //путь сохранения файлов
     destination: (req, file, cb) => {
-        cb(null, "images/");
+        cb(null, "../public/images/products");
     },
     //название файла при сохранении(текущая дата + название)
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        cb(null, Date.now() + "_" + file.originalname);
     },
 });
 
 const upload = multer({ storage });
 
-app.use("/images", express.static("images"));
+app.use(
+    "../public/images/products",
+    express.static("../public/images/products")
+);
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
@@ -248,13 +257,20 @@ app.get("/products/:id", (req, res) => {
 app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
     const { name, description, price, categoryid, quantity } = req.body;
     console.log(req.body);
-    const image = req.file ? `/images/${req.file.filename}` : null;
+    const imagePath = req.file ? `/images/products/${req.file.filename}` : null;
     console.log(req.file);
-    console.log(req.file.filename);
-    console.log(image);
+    console.log(imagePath);
     db.run(
         "insert into products(name, description, price, categoryid, userid, image, quantity) values(?,?,?,?,?,?,?)",
-        [name, description, price, categoryid, req.user.id, image, quantity],
+        [
+            name,
+            description,
+            price,
+            categoryid,
+            req.user.id,
+            imagePath,
+            quantity,
+        ],
         (err) => {
             if (err) {
                 console.log(err);
@@ -276,7 +292,7 @@ app.put(
     (req, res) => {
         const { id } = req.params;
         const { name, description, price, categoryid, quantity } = req.body;
-        const image = req.file ? `/images/${req.file.filename}` : null;
+        const image = req.file ? `/images/products/${req.file.filename}` : null;
         db.run(
             "update products set name=?, description=?, price=?, categoryid=?, image=?, quantity=? where id=?",
             [name, description, price, categoryid, image, quantity, id],
