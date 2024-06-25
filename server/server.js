@@ -36,7 +36,11 @@ db.serialize(() => {
     );
 
     db.run(
-        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, image text, quantity integer default 0, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
+        "create table if not exists products(id integer primary key autoincrement, name text not null, description text, price real, categoryid integer, userid integer, quantity integer default 0, foreign key(categoryid) references categories(id), foreign key(userid) references users(id))"
+    );
+
+    db.run(
+        "create table if not exists product_images(id integer primary key autoincrement, productid integer not null, imagepath text not null, foreign key(productid) references products(id))"
     );
 });
 
@@ -245,71 +249,147 @@ app.get("/products", (req, res) => {
 //получение товара по id
 app.get("/products/:id", (req, res) => {
     const { id } = req.params;
-    console.log(id);
     db.get("select * from products where id=?", [id], (err, product) => {
         if (err || !product) {
             return res.status(404).json({ message: "Товар не найден" });
         }
-        res.json(product);
-        console.log(product);
+
+        db.all(
+            "select imagepath from product_images where productid=?",
+            [id],
+            (err, images) => {
+                if (err) {
+                    return res.status(500).json({
+                        message: "Ошибка при получении изображений: ",
+                        err,
+                    });
+                }
+                res.json({
+                    ...product,
+                    images: images.map((img) => img.imagepath),
+                });
+                console.log(product);
+            }
+        );
     });
 });
 
 //добавление товаров
-app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
-    const { name, description, price, categoryid, quantity } = req.body;
-    console.log(req.body);
-    const imagePath = req.file ? `/images/products/${req.file.filename}` : null;
-    console.log(req.file);
-    console.log(imagePath);
-    db.run(
-        "insert into products(name, description, price, categoryid, userid, image, quantity) values(?,?,?,?,?,?,?)",
-        [
-            name,
-            description,
-            price,
-            categoryid,
-            req.user.id,
-            imagePath,
-            quantity,
-        ],
-        (err) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ message: "Ошибка базы данных" });
+app.post(
+    "/products",
+    authenticateToken,
+    upload.array("images", 10),
+    (req, res) => {
+        const { name, description, price, categoryid, quantity } = req.body;
+        console.log(req.body);
+
+        db.run(
+            "insert into products(name, description, price, categoryid, userid, quantity) values(?,?,?,?,?,?)",
+            [name, description, price, categoryid, req.user.id, quantity],
+            (err) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({
+                        message: "Ошибка при создании продукта: ",
+                        err,
+                    });
+                }
+                const productId = this.lastID;
+                console.log(productId);
+                const images = req.files.map(
+                    (file) => `/images/products/${file.filename}`
+                );
+                console.log(images);
+                const placeholders = images.map(() => "(?,?)").join(", ");
+                const values = images.reduce(
+                    (acc, image) => acc.concat(productId, image),
+                    []
+                );
+
+                db.run(
+                    `insert into product_images(productid, imagepath) values ${placeholders}`,
+                    values,
+                    (err) => {
+                        if (err) {
+                            return res.status(500).json({
+                                message: "Ошибка при сохранении изображения: ",
+                                err,
+                            });
+                        }
+                        res.status(201).json({
+                            message: "Товар добавлен",
+                        });
+                    }
+                );
             }
-            res.status(201).json({
-                message: "Товар добавлен",
-                productId: this.lastID,
-            });
-        }
-    );
-});
+        );
+    }
+);
 
 //изменение товара
 app.put(
     "/products/:id",
     authenticateToken,
-    upload.single("image"),
+    upload.array("images", 10),
     (req, res) => {
         const { id } = req.params;
         const { name, description, price, categoryid, quantity } = req.body;
-        const image = req.file ? `/images/products/${req.file.filename}` : null;
-        db.run(
-            "update products set name=?, description=?, price=?, categoryid=?, image=?, quantity=? where id=?",
-            [name, description, price, categoryid, image, quantity, id],
-            (err) => {
-                if (err) {
-                    return res
-                        .status(500)
-                        .json({ message: "Ошибка базы данных" });
-                }
-                res.status(201).json({
-                    message: "Товар изменен",
-                    productId: this.lastID,
-                });
-            }
+        const images = req.files.map(
+            (file) => `/images/products/${file.filename}`
         );
+
+        let query =
+            "update products set name=?, description=?, price=?, categoryid=?, quantity=? where id=?";
+        let params = [name, description, price, categoryid, quantity, id];
+
+        db.run(query, params, (err) => {
+            if (err) {
+                return res
+                    .status(500)
+                    .json({ message: "Ошибка при обновлении товара: ", err });
+            }
+            if (images.length > 0) {
+                db.run(
+                    "delete from product_images where productid=?",
+                    [id],
+                    (err) => {
+                        if (err) {
+                            return res.status(500).json({
+                                message:
+                                    "Ошибка при удалении старых изображений: ",
+                                err,
+                            });
+                        }
+                        const placeholders = images
+                            .map(() => "(?,?)")
+                            .join(", ");
+                        const values = images.reduce(
+                            (acc, image) => acc.concat(id, image),
+                            []
+                        );
+
+                        db.run(
+                            `insert into product_images(productid, imagepath) values ${placeholders}`,
+                            values,
+                            (err) => {
+                                if (err) {
+                                    return res.status(500).json({
+                                        message:
+                                            "Ошибка при сохранении новых изображений: ",
+                                        err,
+                                    });
+                                }
+                                res.status(200).json({
+                                    message: "Товар успешно обновлен",
+                                });
+                            }
+                        );
+                    }
+                );
+            } else {
+                res.status(200).json({ message: "Товар успешно обновлен" });
+            }
+        });
     }
 );
 

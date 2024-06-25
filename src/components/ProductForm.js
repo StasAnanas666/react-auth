@@ -12,7 +12,7 @@ const ProductForm = ({
     const [productName, setProductName] = useState(product.name || "");
     const [productDesc, setProductDesc] = useState(product.description || "");
     const [productPrice, setProductPrice] = useState(product.price || "");
-    const [productImage, setProductImage] = useState(null);
+    const [productImages, setProductImages] = useState([]);
     const [productQuantity, setProductQuantity] = useState(
         product.quantity || ""
     );
@@ -24,6 +24,7 @@ const ProductForm = ({
         setProductPrice(product.price || "");
         setProductQuantity(product.quantity || "");
         setCategoryId(product.categoryid || "");
+        setProductImages([]);
     }, [product]);
 
     const handleSubmit = async (e) => {
@@ -34,8 +35,9 @@ const ProductForm = ({
         formData.append("description", productDesc);
         formData.append("price", productPrice);
         formData.append("categoryid", categoryId);
-        if (productImage) {
-            formData.append("image", productImage);
+        console.log(productImages);
+        for(let i = 0; i < productImages.length; i++) {
+            formData.append("images", productImages[i]);
         }
         formData.append("quantity", productQuantity);
 
@@ -76,7 +78,7 @@ const ProductForm = ({
         setProductPrice("");
         setCategoryId("");
         setProductQuantity("");
-        setProductImage(null);
+        setProductImages([]);
         resetForm();
     };
 
@@ -85,9 +87,8 @@ const ProductForm = ({
         console.log(e.target.value);
     };
 
-    const handleImageChange = async (e) => {
-        setProductImage(e.target.files[0]);
-        console.log(e.target.files[0].name);
+    const handleImagesChange = async (e) => {
+        setProductImages(e.target.files);
     };
 
     return (
@@ -194,9 +195,10 @@ const ProductForm = ({
                 </label>
                 <input
                     type="file"
+                    multiple
                     className="shadow appearance-none block w-full text-sm text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
                     id="productImage"
-                    onChange={handleImageChange}
+                    onChange={handleImagesChange}
                 />
             </div>
             <div className="flex items-center">
