@@ -238,7 +238,17 @@ app.delete("/categories/:id", authenticateToken, (req, res) => {
 
 //получение всех товаров
 app.get("/products", (req, res) => {
-    db.all("select * from products", [], (err, products) => {
+    const { categoryId } = req.query;
+    console.log(categoryId);
+    let sql =
+        "select p.*, pi.imagepath as image from products p left join product_images pi on p.id=pi.productid";
+    if (categoryId) {
+        sql += " where p.categoryid=?";
+    }
+
+    sql += " group by p.id";
+
+    db.all(sql, categoryId ? [categoryId] : [], (err, products) => {
         if (err) {
             return res.status(500).json({ message: "Ошибка базы данных" });
         }
@@ -286,7 +296,7 @@ app.post(
         db.run(
             "insert into products(name, description, price, categoryid, userid, quantity) values(?,?,?,?,?,?)",
             [name, description, price, categoryid, req.user.id, quantity],
-            (err) => {
+            function (err) {
                 if (err) {
                     console.log(err);
                     return res.status(500).json({

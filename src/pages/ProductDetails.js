@@ -16,12 +16,16 @@ const ProductDetails = () => {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [mainImage, setMainImage] = useState("");
 
     const fetchProduct = async () => {
         try {
             const response = await axios.get(`${serverUrl}/products/${id}`);
             if (response.status == 200) {
                 setProduct(response.data);
+                setMainImage(response.data.images[0]);
+                console.log(response.data.images[0]);
+                console.log(response.data);
             } else {
                 console.error("Ошибка загрузки товара");
             }
@@ -41,22 +45,38 @@ const ProductDetails = () => {
     }
 
     return (
-        <div className="w-full grow items-center justify-center px-12 bg-white">
-            <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-[1fr_2fr] lg:gap-x-8 lg:px-8">
-                <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
-                    <img
-                        src={product.image}
+        <div className="w-full grow items-center justify-center px-12 bg-neutral-700 text-white">
+            <div className="mx-auto mt-6 lg:grid lg:grid-cols-[1fr_2fr] lg:gap-x-16">
+                <div className="sm:overflow-hidden sm:rounded-lg">
+                    {mainImage && (
+                        <img
+                        src={mainImage}
                         alt={product.name}
-                        className="h-96 w-full rounded-lg object-cover object-center"
+                        className="lg:h-fit lg:w-full w-full h-full rounded-lg object-cover object-center"
                     />
+                    )}
+                    
+
+                    <div className="grid grid-flow-col auto-cols-auto mt-6 gap-6">
+                        {product.images && product.images.length > 1 &&
+                            product.images.map((image, index) => (
+                                <button key={index} onClick={() => setMainImage(image)}>
+                                    <img
+                                        className="rounded-lg object-cover object-center"
+                                        src={image}
+                                        alt={product.name}
+                                    />
+                                </button>
+                            ))}
+                    </div>
                 </div>
 
-                <div className="flex flex-col justify-between h-full px-4 pb-16 pt-10 sm:px-6 lg:px-8 ">
+                <div className="flex flex-col justify-between h-full px-4 pb-16 pt-10">
                     <div className="flex justify-between">
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                             {product.name}
                         </h1>
-                        <p className="text-3xl tracking-tight text-gray-900">
+                        <p className="text-3xl tracking-tight">
                             {product.price} руб.
                         </p>
                     </div>
@@ -65,9 +85,7 @@ const ProductDetails = () => {
                         <h3 className="sr-only">Description</h3>
 
                         <div className="space-y-6">
-                            <p className="text-base text-gray-900">
-                                {product.description}
-                            </p>
+                            <p className="text-base">{product.description}</p>
                         </div>
                     </div>
 
@@ -82,7 +100,7 @@ const ProductDetails = () => {
                                             key={rating}
                                             className={classNames(
                                                 reviews.average > rating
-                                                    ? "text-gray-900"
+                                                    ? "text-yellow-600"
                                                     : "text-gray-200",
                                                 "h-5 w-5 flex-shrink-0"
                                             )}
